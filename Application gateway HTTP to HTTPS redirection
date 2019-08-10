@@ -1,0 +1,22 @@
+# Script for performing the Http to Https redirection
+# Pre-requisites
+  Powershell should have Azure Module.
+
+# Execute the below powershell script
+  $appGwName = "Appgwname"
+  $apprgname = "AppGw resource grp name"
+  $appgw = Get-AzureRmApplicationGateway -Name $appGwName -ResourceGroupName $apprgname
+  $fipconfig = Get-AzureRmApplicationGatewayFrontendIPConfig -Name appGatewayFrontendIP -ApplicationGateway $appgw
+  Add-AzureRmApplicationGatewayFrontendPort -Name appGatewayFrontendPort  -Port 80 -ApplicationGateway $appgw
+  $fp = Get-AzureRmApplicationGatewayFrontendPort -Name appGatewayFrontendPort -ApplicationGateway $appgw
+  Add-AzureRmApplicationGatewayHttpListener -Name appGatewayHttpListener  -Protocol Http -FrontendPort $fp -FrontendIPConfiguration $fipconfig -ApplicationGateway $appgw
+  $listener1 = Get-AzureRmApplicationGatewayHttpListener -Name appGatewayHttpsListener -ApplicationGateway $appgw
+  $listener2 = Get-AzureRmApplicationGatewayHttpListener -Name appGatewayHttpListener -ApplicationGateway $appgw
+  Add-AzureRmApplicationGatewayRedirectConfiguration -Name RedirectHttpToHttps -RedirectType Permanent -TargetListener $listener1 -IncludePath $true -IncludeQueryString $true -ApplicationGateway $appgw
+  $redirectconfig = Get-AzureRmApplicationGatewayRedirectConfiguration  -Name RedirectHttpToHttps -ApplicationGateway $appgw
+  Add-AzureRmApplicationGatewayRequestRoutingRule -Name rule2 -RuleType Basic -HttpListener $listener2 -RedirectConfiguration $redirectconfig -ApplicationGateway $appgw
+  Set-AzureRmApplicationGateway -ApplicationGateway $appgw
+  
+  # Result
+  
+ Redirection of Http request to Https can be achieved using this script
